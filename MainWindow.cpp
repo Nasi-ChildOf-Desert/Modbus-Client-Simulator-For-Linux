@@ -13,7 +13,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    settingForm = new SettingDialog(this);
+    settingForm->show();
+    connect(settingForm, &SettingDialog::userSettingIsReady, this, &MainWindow::prepareFormAddress) ;
 
 }
 
@@ -27,9 +29,72 @@ MainWindow::~MainWindow()
 }
 
 //***********************************************************
+
+void MainWindow::addCoils()
+{
+
+    coilAddressFrom = settingForm->settings().coilAddressFrom;
+    coilAddressTo = settingForm->settings().coilAddressTo;
+
+    QVBoxLayout* lay = new QVBoxLayout();
+    for (int i = coilAddressFrom ; i < coilAddressTo; ++i) {
+        QCheckBox *dynamic = new QCheckBox(QString::number(i));
+        dynamic->setObjectName("coils_" + QString::number(i));
+        lay->addWidget(dynamic);
+    }
+    ui->scrollAreaWidgetContents->setLayout(lay);
+}
+
+//***********************************************************
+void MainWindow::AddDiscreteInput()
+{
+    coilDiscreteInputAddressFrom = settingForm->settings().coilDiscreteInputAddressFrom;
+    coilDiscreteInputAddressTo = settingForm->settings().coilDiscreteInputAddressTo;
+    QVBoxLayout* lay = new QVBoxLayout();
+    for (int i = coilDiscreteInputAddressFrom ; i < coilDiscreteInputAddressTo; ++i) {
+        QCheckBox *dynamic = new QCheckBox(QString::number(i));
+        dynamic->setObjectName("disc_" + QString::number(i));
+        lay->addWidget(dynamic);
+    }
+    ui->scrollAreaWidgetContents_2->setLayout(lay);
+}
+
+//***********************************************************
+void MainWindow::AddRegister()
+{
+    RegisterAddressFrom = settingForm->settings().RegisterAddressFrom;
+    RegisterAddressTo = settingForm->settings().RegisterAddressTo;
+    QGridLayout * lay = new QGridLayout ();
+    for (int i = RegisterAddressFrom ; i < RegisterAddressTo; ++i) {
+        QLabel *label = new QLabel(QString::number(i));
+        QLineEdit *dynamic = new QLineEdit();
+        dynamic->setObjectName("inReg_" + QString::number(i));
+        lay->addWidget(label,i , 0);
+        lay->addWidget(dynamic, i, 1);
+    }
+    ui->scrollAreaWidgetContents_3->setLayout(lay);
+}
+
+//***********************************************************
+void MainWindow::AddHoldingReg()
+{
+    HoldingRegAddressFrom = settingForm->settings().HoldingRegAddressFrom;
+    HoldingRegAddressTo = settingForm->settings().HoldingRegAddressTo;
+    QGridLayout * lay = new QGridLayout ();
+    for (int i = HoldingRegAddressFrom ; i < HoldingRegAddressTo; ++i) {
+        QLabel *label = new QLabel(QString::number(i));
+        QLineEdit *dynamic = new QLineEdit();
+        dynamic->setObjectName("holdReg_" + QString::number(i));
+        lay->addWidget(label,i , 0);
+        lay->addWidget(dynamic, i, 1);
+    }
+    ui->scrollAreaWidgetContents_4->setLayout(lay);
+}
+
+//***********************************************************
 void MainWindow::init()
 {
-  /*  if (modbusDevice) {
+    /*  if (modbusDevice) {
         modbusDevice->disconnect();
         delete modbusDevice;
         modbusDevice = nullptr;
@@ -43,10 +108,30 @@ void MainWindow::init()
         statusBar()->showMessage(tr("Could not create Modbus slave."), 5000);
     } else {
         QModbusDataUnitMap reg;
-        reg.insert(QModbusDataUnit::Coils, { QModbusDataUnit::Coils, coilAddressFrom, static_cast<quint16>(coilAddressTo - coilAddressFrom)});
-        reg.insert(QModbusDataUnit::DiscreteInputs, { QModbusDataUnit::DiscreteInputs, coilDiscreteInputAddressFrom, static_cast<quint16>(coilDiscreteInputAddressTo - coilDiscreteInputAddressFrom) });
-        reg.insert(QModbusDataUnit::InputRegisters, { QModbusDataUnit::InputRegisters, RegisterAddressFrom, static_cast<quint16>(RegisterAddressTo - RegisterAddressFrom) });
-        reg.insert(QModbusDataUnit::HoldingRegisters, { QModbusDataUnit::HoldingRegisters, HoldingRegAddressFrom, static_cast<quint16>(HoldingRegAddressTo - HoldingRegAddressFrom) });
+
+        hasCoils = settingForm->settings().hasCoils;
+        hasDiscreteInputs = settingForm->settings().hasDiscreteInputs;
+        hasInputRegisters = settingForm->settings().hasInputRegisters;
+        hasHoldingRegisters = settingForm->settings().hasHoldingRegisters;
+
+        if(hasCoils)
+        {
+            reg.insert(QModbusDataUnit::Coils, { QModbusDataUnit::Coils, coilAddressFrom, static_cast<quint16>(coilAddressTo - coilAddressFrom)});
+        }
+        if(hasDiscreteInputs)
+        {
+            reg.insert(QModbusDataUnit::DiscreteInputs, { QModbusDataUnit::DiscreteInputs, coilDiscreteInputAddressFrom, static_cast<quint16>(coilDiscreteInputAddressTo - coilDiscreteInputAddressFrom) });
+        }
+        if(hasInputRegisters)
+        {
+            reg.insert(QModbusDataUnit::InputRegisters, { QModbusDataUnit::InputRegisters, RegisterAddressFrom, static_cast<quint16>(RegisterAddressTo - RegisterAddressFrom) });
+        }
+        if(hasHoldingRegisters)
+        {
+            qDebug() <<HoldingRegAddressFrom;
+            reg.insert(QModbusDataUnit::HoldingRegisters, { QModbusDataUnit::HoldingRegisters, HoldingRegAddressFrom, static_cast<quint16>(HoldingRegAddressTo - HoldingRegAddressFrom) });
+        }
+
         modbusDevice->setMap(reg);
         connect(modbusDevice, &QModbusServer::dataWritten,
                 this, &MainWindow::updateWidgets);
@@ -129,6 +214,15 @@ void MainWindow::handleDeviceError(QModbusDevice::Error newError)
 }
 
 //***********************************************************
+void MainWindow::prepareFormAddress()
+{
+    addCoils();
+    AddDiscreteInput();
+    AddRegister();
+    AddHoldingReg();
+}
+
+//***********************************************************
 void MainWindow::setupDeviceData()
 {
     if (!modbusDevice)
@@ -154,77 +248,6 @@ void MainWindow::setupDeviceData()
     }
 }
 
-//***********************************************************
-void MainWindow::on_AddCoil_clicked()
-{
-
-
-    /*if(ui->scrollAreaWidgetContents->layout())
-    {
-        QLayoutItem *child;
-        while ((child = ui->scrollAreaWidgetContents->layout()->takeAt(0)) != 0) {
-             delete child->widget();
-         }
-    }*/
-    coilAddressFrom = ui->coilAddressFrom->text().toInt();
-    coilAddressTo = ui->coilAddressTo->text().toInt();
-    QVBoxLayout* lay = new QVBoxLayout();
-    for (int i = coilAddressFrom ; i < coilAddressTo; ++i) {
-        QCheckBox *dynamic = new QCheckBox(QString::number(i));
-        dynamic->setObjectName("coils_" + QString::number(i));
-        lay->addWidget(dynamic);
-    }
-    ui->scrollAreaWidgetContents->setLayout(lay);
-
-}
-
-//***********************************************************
-void MainWindow::on_AddDiscreteInput_clicked()
-{
-    coilDiscreteInputAddressFrom = ui->DiscretecoilAddressFrom->text().toInt();
-    coilDiscreteInputAddressTo = ui->DiscretecoilAddressTo->text().toInt();
-    QVBoxLayout* lay = new QVBoxLayout();
-    for (int i = coilDiscreteInputAddressFrom ; i < coilDiscreteInputAddressTo; ++i) {
-        QCheckBox *dynamic = new QCheckBox(QString::number(i));
-        dynamic->setObjectName("disc_" + QString::number(i));
-        lay->addWidget(dynamic);
-    }
-    ui->scrollAreaWidgetContents_2->setLayout(lay);
-
-}
-
-//***********************************************************
-void MainWindow::on_AddRegister_clicked()
-{
-    RegisterAddressFrom = ui->RegisterAddressFrom->text().toInt();
-    RegisterAddressTo = ui->RegisterAddressTo->text().toInt();
-    QGridLayout * lay = new QGridLayout ();
-    for (int i = RegisterAddressFrom ; i < RegisterAddressTo; ++i) {
-        QLabel *label = new QLabel(QString::number(i));
-        QLineEdit *dynamic = new QLineEdit();
-        dynamic->setObjectName("inReg_" + QString::number(i));
-        lay->addWidget(label,i , 0);
-        lay->addWidget(dynamic, i, 1);
-    }
-    ui->scrollAreaWidgetContents_3->setLayout(lay);
-}
-
-//***********************************************************
-void MainWindow::on_AddHoldingReg_clicked()
-{
-
-    HoldingRegAddressFrom = ui->holdingRegAddressFrom->text().toInt();
-    HoldingRegAddressTo = ui->holdingRegAddressTo->text().toInt();
-    QGridLayout * lay = new QGridLayout ();
-    for (int i = HoldingRegAddressFrom ; i < HoldingRegAddressTo; ++i) {
-        QLabel *label = new QLabel(QString::number(i));
-        QLineEdit *dynamic = new QLineEdit();
-        dynamic->setObjectName("holdReg_" + QString::number(i));
-        lay->addWidget(label,i , 0);
-        lay->addWidget(dynamic, i, 1);
-    }
-    ui->scrollAreaWidgetContents_4->setLayout(lay);
-}
 
 //***********************************************************
 void MainWindow::on_connectButton_clicked()
@@ -305,4 +328,21 @@ void MainWindow::setRegister(const QString &value)
             statusBar()->showMessage(tr("Could not set register: ") + modbusDevice->errorString(),
                                      5000);
     }
+}
+
+void MainWindow::on_actionSetting_triggered()
+{
+    // if (modbusDevice)
+    //  modbusDevice->disconnectDevice();
+    settingForm->resetSetting();
+
+    qDeleteAll(ui->scrollAreaWidgetContents->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly));
+    qDeleteAll(ui->scrollAreaWidgetContents_2->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly));
+    qDeleteAll(ui->scrollAreaWidgetContents_3->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly));
+    qDeleteAll(ui->scrollAreaWidgetContents_4->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly));
+    delete  ui->scrollAreaWidgetContents->layout();
+    delete  ui->scrollAreaWidgetContents_2->layout();
+    delete  ui->scrollAreaWidgetContents_3->layout();
+    delete  ui->scrollAreaWidgetContents_4->layout();
+    settingForm->show();
 }

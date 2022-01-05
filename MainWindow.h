@@ -6,6 +6,8 @@
 #include <QButtonGroup>
 #include "QLineEdit"
 
+#include "SettingDialog.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -18,6 +20,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public:
 
 private slots:
     void coilChanged(int id);
@@ -26,25 +29,31 @@ private slots:
     void setRegister(const QString &value);
     void updateWidgets(QModbusDataUnit::RegisterType table, int address, int size);
 
-    void on_AddCoil_clicked();
-    void on_AddDiscreteInput_clicked();
-    void on_AddRegister_clicked();
-    void on_AddHoldingReg_clicked();
 
     void on_connectButton_clicked();
     void onStateChanged(int state);
     void handleDeviceError(QModbusDevice::Error newError);
 
+    void prepareFormAddress();
+
+    void on_actionSetting_triggered();
+
 private:
     void  init();
     void setupWidgetContainers();
     void setupDeviceData();
+    void addCoils();
+    void AddDiscreteInput();
+    void AddRegister();
+    void AddHoldingReg();
 
     Ui::MainWindow *ui;
     QModbusServer *modbusDevice;
     QButtonGroup coilButtons;
     QButtonGroup discreteButtons;
     QHash<QString, QLineEdit *> registers;
+
+    SettingDialog *settingForm;
 
     int coilAddressFrom;
     int coilAddressTo ;
@@ -54,6 +63,11 @@ private:
     int RegisterAddressTo ;
     int HoldingRegAddressFrom ;
     int HoldingRegAddressTo ;
+    bool hasCoils ;
+    bool hasDiscreteInputs ;
+    bool hasInputRegisters ;
+    bool hasHoldingRegisters;
+
 
 };
 #endif // MAINWINDOW_H
