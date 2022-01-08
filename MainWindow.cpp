@@ -128,7 +128,6 @@ void MainWindow::init()
         }
         if(hasHoldingRegisters)
         {
-            qDebug() <<HoldingRegAddressFrom;
             reg.insert(QModbusDataUnit::HoldingRegisters, { QModbusDataUnit::HoldingRegisters, HoldingRegAddressFrom, static_cast<quint16>(HoldingRegAddressTo - HoldingRegAddressFrom) });
         }
 

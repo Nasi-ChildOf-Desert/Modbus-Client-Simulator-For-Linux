@@ -28,8 +28,6 @@ SettingDialog::SettingDialog(QWidget *parent) :
         {
             m_settings.coilAddressFrom = ui->coilAddressFrom->text().toInt();
             m_settings.coilAddressTo = ui->coilAddressTo->text().toInt();
-             qDebug() << "ui->coilAddressFrom->text().toInt()" << ui->coilAddressFrom->text().toInt();
-             qDebug() << " m_settings.coilAddressFrom" <<   m_settings.coilAddressFrom;
         }
         if(ui->hasDiscreteInput->isChecked())
         {
@@ -78,21 +76,21 @@ void SettingDialog::resetSetting()
     m_settings.HoldingRegAddressFrom = 0 ;
     m_settings.HoldingRegAddressTo = 0 ;
 
-     m_settings.hasCoils = false;
-     m_settings.hasDiscreteInputs = false;
-     m_settings.hasInputRegisters = false;
-     m_settings.hasHoldingRegisters = false;
+    m_settings.hasCoils = false;
+    m_settings.hasDiscreteInputs = false;
+    m_settings.hasInputRegisters = false;
+    m_settings.hasHoldingRegisters = false;
 
-     ui->coilAddressFrom->clear();
-     ui->coilAddressTo->clear();
-     ui->RegisterAddressFrom->clear();
-     ui->RegisterAddressTo->clear();
-     ui->DiscretecoilAddressFrom->clear();
-     ui->DiscretecoilAddressTo->clear();
-     ui->holdingRegAddressFrom->clear();
-     ui->holdingRegAddressTo->clear();
+    ui->coilAddressFrom->clear();
+    ui->coilAddressTo->clear();
+    ui->RegisterAddressFrom->clear();
+    ui->RegisterAddressTo->clear();
+    ui->DiscretecoilAddressFrom->clear();
+    ui->DiscretecoilAddressTo->clear();
+    ui->holdingRegAddressFrom->clear();
+    ui->holdingRegAddressTo->clear();
 
-     disableAddressText();
+    disableAddressText();
 }
 
 void SettingDialog::disableAddressText()

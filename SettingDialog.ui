@@ -283,12 +283,12 @@
      <rect>
       <x>200</x>
       <y>120</y>
-      <width>121</width>
+      <width>131</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
-     <string>DiscreteInput</string>
+     <string>HoldingRegister</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
