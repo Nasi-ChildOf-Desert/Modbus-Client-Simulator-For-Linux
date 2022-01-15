@@ -43,9 +43,9 @@ private:
     void setupWidgetContainers();
     void setupDeviceData();
     void addCoils();
-    void AddDiscreteInput();
-    void AddRegister();
-    void AddHoldingReg();
+    void addDiscreteInput();
+    void addRegister();
+    void addHoldingReg();
 
     Ui::MainWindow *ui;
     QModbusServer *modbusDevice;

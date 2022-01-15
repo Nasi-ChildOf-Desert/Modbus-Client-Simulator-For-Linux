@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     settingForm = new SettingDialog(this);
     settingForm->show();
     connect(settingForm, &SettingDialog::userSettingIsReady, this, &MainWindow::prepareFormAddress) ;
+    modbusDevice = Q_NULLPTR;
 
 }
 
@@ -25,6 +26,7 @@ MainWindow::~MainWindow()
     if (modbusDevice)
         modbusDevice->disconnectDevice();
     delete modbusDevice;
+    modbusDevice = nullptr;
     delete ui;
 }
 
@@ -46,7 +48,7 @@ void MainWindow::addCoils()
 }
 
 //***********************************************************
-void MainWindow::AddDiscreteInput()
+void MainWindow::addDiscreteInput()
 {
     coilDiscreteInputAddressFrom = settingForm->settings().coilDiscreteInputAddressFrom;
     coilDiscreteInputAddressTo = settingForm->settings().coilDiscreteInputAddressTo;
@@ -60,7 +62,7 @@ void MainWindow::AddDiscreteInput()
 }
 
 //***********************************************************
-void MainWindow::AddRegister()
+void MainWindow::addRegister()
 {
     RegisterAddressFrom = settingForm->settings().RegisterAddressFrom;
     RegisterAddressTo = settingForm->settings().RegisterAddressTo;
@@ -76,7 +78,7 @@ void MainWindow::AddRegister()
 }
 
 //***********************************************************
-void MainWindow::AddHoldingReg()
+void MainWindow::addHoldingReg()
 {
     HoldingRegAddressFrom = settingForm->settings().HoldingRegAddressFrom;
     HoldingRegAddressTo = settingForm->settings().HoldingRegAddressTo;
@@ -94,14 +96,17 @@ void MainWindow::AddHoldingReg()
 //***********************************************************
 void MainWindow::init()
 {
-    /*  if (modbusDevice) {
-        modbusDevice->disconnect();
+    if(modbusDevice)
+    {
+        if (modbusDevice->state() == QModbusDevice::ConnectedState || modbusDevice->state() == QModbusDevice::ConnectingState)
+        {
+            modbusDevice->disconnectDevice();
+        }
         delete modbusDevice;
         modbusDevice = nullptr;
-    }*/
-#if QT_CONFIG(modbus_serialport)
-    modbusDevice = new QModbusRtuSerialSlave(this);
-#endif
+    }
+
+        modbusDevice = new QModbusRtuSerialSlave(this);
 
     if (!modbusDevice) {
         ui->connectButton->setDisabled(true);
@@ -216,9 +221,11 @@ void MainWindow::handleDeviceError(QModbusDevice::Error newError)
 void MainWindow::prepareFormAddress()
 {
     addCoils();
-    AddDiscreteInput();
-    AddRegister();
-    AddHoldingReg();
+    addDiscreteInput();
+    addRegister();
+    addHoldingReg();
+    init();
+    setupWidgetContainers();
 }
 
 //***********************************************************
@@ -251,8 +258,6 @@ void MainWindow::setupDeviceData()
 //***********************************************************
 void MainWindow::on_connectButton_clicked()
 {
-    init();
-    setupWidgetContainers();
 
     bool intendToConnect = (modbusDevice->state() == QModbusDevice::UnconnectedState);
 
